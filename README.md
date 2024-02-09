@@ -15,10 +15,11 @@ The codes will be coming soon!
 ## Citing
 
 ```
-@inproceedings{Ji2024TowardsExact,
+@article{Ji2024TowardsExact,
   title={Towards Efficient and Exact Optimization of Language Model Alignment},
   author={Haozhe Ji, Cheng Lu, Yilin Niu, Pei Ke, Hongning Wang, Jun Zhu, Jie Tang, Minlie Huang},
   year={2024},
+  journal={arXiv preprint arXiv:2402.00856},
   url={https://arxiv.org/abs/2402.00856}
 }
 ```
