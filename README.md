@@ -8,7 +8,7 @@ This is the official pytorch implementation of the EXO algorithm for *efficient 
   <img src="imgs/rkl_fkl.png" width="400px" />
 </div>
 
-EXO essentially minimizes the reverse KL between the empirical distributions defined by the policy and the reward. As a comparison, DPO corresponds to minimizing the forward KL. The following figure illustrates the distinct behavior of policies obtained by minimizing (a) the reverse KL and (b) the forward KL.
+EXO essentially minimizes the reverse KL between the empirical distributions defined by the policy and the reward. As a comparison, DPO corresponds to minimizing the forward KL. The above figure illustrates the distinct behavior of policies obtained by minimizing (a) the reverse KL and (b) the forward KL.
 
 ## Dependencies
 
