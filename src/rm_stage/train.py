@@ -26,7 +26,7 @@ from utils.module.lora import convert_linear_layer_to_lora, convert_lora_to_line
 from utils.data.data_utils import load_dataset
 from utils.utils import print_rank_0, to_device, save_hf_format, set_random_seed, get_all_reduce_mean, get_optimizer_grouped_parameters, save_zero_three_model, load_hf_tokenizer
 from utils.ds_utils import get_train_ds_config
-from utils.model.model_utils import create_custom_model, causal_lm_model_to_fp32_loss 
+from utils.model.model_utils import create_custom_model, causal_lm_model_to_fp32_loss
 from utils.perf import print_throughput
 
 from data import PrefDataset
@@ -35,7 +35,7 @@ from model import RewardModel
 def save_model(args, model, tokenizer):
     print_rank_0('saving model ...', args.global_rank)
     model = convert_lora_to_linear_layer(model)
-    
+
     if args.global_rank == 0:
         save_hf_format(model, tokenizer, args, model_name_or_path=args.model_name_or_path)
     if args.zero_stage == 3:
@@ -163,7 +163,7 @@ def parse_args():
         type=int,
         default=0,
         help='ZeRO optimization stage for Actor model (and clones).')
-    
+
     parser.add_argument("--eval_iters",
                         type=int,
                         default=100,
@@ -186,7 +186,7 @@ def parse_args():
     parser.add_argument('--print_loss',
                         action='store_true',
                         help='Prints loss at each step.')
-    
+
     ## LoRA for efficient training setting
     parser.add_argument("--lora_dim",
                         type=int,
@@ -206,7 +206,7 @@ def parse_args():
         help=
         "Initial LoRA learning rate (after the potential warmup period) to use."
     )
-    
+
     parser = deepspeed.add_config_arguments(parser)
     args = parser.parse_args()
 
@@ -226,7 +226,7 @@ def main():
 
     args.global_rank = torch.distributed.get_rank()
 
-    tb_path, tb_name = args.tensorboard_name_path.split(":")
+    tb_name, tb_path = args.tensorboard_name_path.split(":")
     ds_config = get_train_ds_config(offload=args.offload,
                                     dtype=args.dtype,
                                     stage=args.zero_stage,
@@ -249,8 +249,8 @@ def main():
     tokenizer = load_hf_tokenizer(args.model_name_or_path,
                                   fast_tokenizer=False, # better when set to slow
                                   add_special_tokens=None)
-    
-    model = create_custom_model(RewardModel, 
+
+    model = create_custom_model(RewardModel,
                                 args.model_name_or_path,
                                 tokenizer,
                                 ds_config,
@@ -258,7 +258,7 @@ def main():
                                 from_pretrained=True,
                                 zero_stage=args.zero_stage,
                                 compute_fp32_loss=args.compute_fp32_loss)
-    
+
     # prepare lora
     if args.lora_dim > 0:
         model = convert_linear_layer_to_lora(model, args.lora_module_name,
@@ -284,7 +284,7 @@ def main():
     else:
         train_sampler = DistributedSampler(train_dataset)
         eval_sampler = DistributedSampler(eval_dataset)
-    
+
     train_dataloader = DataLoader(train_dataset,
                                   collate_fn=train_dataset.collate,
                                   sampler=train_sampler,
@@ -304,7 +304,7 @@ def main():
             _batch = to_device(_batch, device)
             with torch.no_grad():
                 _outputs = model(**_batch)
-            
+
             chosen = _outputs["chosen_end_scores"]
             rejected = _outputs["rejected_end_scores"]
             correct_predictions += (chosen > rejected).sum()
@@ -313,7 +313,7 @@ def main():
             rejected_scores += _outputs["rejected_end_scores"].sum().float()
             if (_step + 1) == eval_iters:
                 break
-        
+
         _acc = correct_predictions / total_predictions
         chosen_scores = chosen_scores / total_predictions
         rejected_scores = rejected_scores / total_predictions
@@ -321,9 +321,9 @@ def main():
             _acc = get_all_reduce_mean(_acc).item()
             chosen_scores = get_all_reduce_mean(chosen_scores).item()
             rejected_scores = get_all_reduce_mean(rejected_scores).item()
-        
+
         return chosen_scores, rejected_scores, _acc
-    
+
     # Split weights in two groups, one with weight decay and the other not.
     optimizer_grouped_parameters = get_optimizer_grouped_parameters(
         model, args.weight_decay, args.lora_learning_rate)
@@ -351,24 +351,24 @@ def main():
         config=ds_config,
         lr_scheduler=lr_scheduler,
         dist_init_required=True)
-    
+
     if args.gradient_checkpointing:
         model.gradient_checkpointing_enable()
-    
+
     # Train!
     print_rank_0("***** Running training *****", args.global_rank)
 
     print_rank_0(
         f"***** Evaluating reward, Epoch {0}/{args.num_train_epochs} *****",
         args.global_rank)
-    
+
     reward_score, reject_score, acc = evaluation_reward(
         model, eval_dataloader, args.eval_iters)
     print_rank_0(
         f"chosen_last_scores (higher is better) : {reward_score}, "
         f"rejected_last_scores (lower is better) : {reject_score}, "
         f"acc (higher is better) : {acc}", args.global_rank)
-    
+
     acc_best = 0
     total_micro_steps = 0
     for epoch in range(args.num_train_epochs):
@@ -389,11 +389,11 @@ def main():
             model.step()
             mean_loss += loss.item()
             total_micro_steps += 1
-        
+
         print_rank_0(
             f"Epoch {epoch+1}/{args.num_train_epochs} with loss {mean_loss/(step+1)}",
             args.global_rank)
-        
+
         # Evaluate reward_loss on the validation set.
         print_rank_0(
             f"***** Evaluating reward, Epoch {epoch+1}/{args.num_train_epochs} *****",
@@ -413,7 +413,7 @@ def main():
     '''
     if args.output_dir is not None:
         print_rank_0('saving model ...', args.global_rank)
-        
+
         if args.global_rank == 0:
             save_hf_format(model, tokenizer, args)
         if args.zero_stage == 3:
