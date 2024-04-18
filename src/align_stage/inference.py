@@ -15,7 +15,7 @@ from torch.utils.data import Dataset
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
-from data import DPODataset
+from data import ExactDataset
 from utils.data.data_utils import get_raw_dataset, ListDataset
 from utils.utils import get_tokenizer
 from utils.perf import Performance
@@ -74,7 +74,7 @@ def main():
     if args.prompt_num == -1:
         args.prompt_num = len(inference_samples)
     inference_samples = inference_samples[:args.prompt_num]
-    inference_dataset = DPODataset(inference_samples,
+    inference_dataset = ExactDataset(inference_samples,
                                    raw_dataset,
                                    tokenizer,
                                    args.max_length,

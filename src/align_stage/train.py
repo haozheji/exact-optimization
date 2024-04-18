@@ -29,7 +29,7 @@ from utils.ds_utils import get_train_ds_config, get_eval_ds_config
 from utils.model.model_utils import create_hf_model, causal_lm_model_to_fp32_loss 
 from utils.perf import print_throughput
 
-from data import DPODataset, ExactDataset
+from data import ExactDataset
 from loss import dpo_loss, exact_loss
 
 DTYPE_MAP = {"fp32": torch.float, "fp16": torch.float16}

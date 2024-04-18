@@ -51,8 +51,15 @@ class MovingAverage:
         return self.mean
 
 def get_tokenizer(model_name_or_path, fast_tokenizer=False, inference=False): # better turn off fast tokenization
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_name_or_path, fast_tokenizer=fast_tokenizer)
+    try: 
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name_or_path, use_fast=fast_tokenizer)
+        use_fast = fast_tokenizer
+    except:
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name_or_path, use_fast=not fast_tokenizer)
+        use_fast = not fast_tokenizer
+    print_rank_0(f"use fast tokenizer: {use_fast}")
     tokenizer.pad_token = tokenizer.eos_token
     # make sure tokenizer is right pad in our logic
     if not inference:
@@ -92,13 +99,8 @@ def save_hf_format(model, tokenizer, args, sub_folder="", model_name_or_path=Non
             del save_dict[key]
     torch.save(save_dict, output_model_file)
     model_to_save.config.to_json_file(output_config_file)
-    # copy tokenizer files to output_dir
-    if model_name_or_path is not None:
-        for filename in os.listdir(model_name_or_path):
-            if filename != CONFIG_NAME and filename != WEIGHTS_NAME:
-                shutil.copy(os.path.join(model_name_or_path, filename), output_dir)
-
-    #tokenizer.save_vocabulary(output_dir)
+    # save tokenizer
+    tokenizer.save_pretrained(output_dir)
 
 
 def set_random_seed(seed):
