@@ -1,4 +1,4 @@
-# Towards Efficient and Exact Optimization of Language Model Alignment
+# Towards Efficient Exact Optimization of Language Model Alignment
 
 ## Overview
 
