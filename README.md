@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is the official pytorch implementation of the EXO algorithm for *efficient exact optimization* of aligning language models (LMs) with human preferences, as described in our ICML 2024 paper [Towards Efficient and Exact Optimization of Language Model Alignment](https://arxiv.org/pdf/2402.00856.pdf). 
+This is the official pytorch implementation of the EXO algorithm for *efficient exact optimization* of aligning language models (LMs) with human preferences, as described in our ICML 2024 paper [Towards Efficient Exact Optimization of Language Model Alignment](https://arxiv.org/pdf/2402.00856.pdf). 
 
 <div align="center">
   <img src="imgs/rkl_fkl.png" width="400px" />
